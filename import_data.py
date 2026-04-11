@@ -8,7 +8,7 @@ def main():
     load_dotenv()
     user = os.getenv('POSTGRES_USER', 'admin')
     password = os.getenv('POSTGRES_PASSWORD', 'admin')
-    db = os.getenv('POSTGRES_DB', 'kids_db')
+    db = os.getenv('POSTGRES_DB', 'routes_db')
     host = 'localhost'
     port = '5432'
 

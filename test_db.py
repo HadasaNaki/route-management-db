@@ -1,7 +1,7 @@
-﻿import pandas as pd
+import pandas as pd
 from sqlalchemy import create_engine
 
-engine = create_engine('postgresql://admin:admin@localhost:5432/kids_db')
+engine = create_engine('postgresql://admin:admin@localhost:5432/routes_db')
 
 try:
     connection = engine.connect()

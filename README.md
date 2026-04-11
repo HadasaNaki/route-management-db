@@ -1,4 +1,4 @@
-# פרויקט ניהול נתונים - חקר נתונים ו-PostgreSQL ילדים (Kids DB)
+# פרויקט ניהול נתונים - מערכת תכנון והרשמה למסלולי טיולים (Routes DB)
 
 פרויקט זה נועד להדגים סביבת עבודה מקומית שלמה הכוללת מסד נתונים, כלים לניהול, וייבוא נתונים אוטומטי. המערכת עטופה כולה ב-Docker ומאפשרת טיפול קל, מהיר והדיר של נתונים תוך שימוש בשפת Python להמרת קבצים שונים לטבלאות חיות בבסיס הנתונים.
 
@@ -22,7 +22,7 @@
 
 לאחר הכנת הסביבה, מבנה התיקיות שלכם נראה בערך כך:
 ```text
-kids/
+routes/
 │
 ├── docker-compose.yml       # קובץ הגדרות הקונטיינרים (Postgres + pgAdmin)
 ├── .env                     # משתני סביבה סודיים (שמות משתמש, סיסמאות)
@@ -36,7 +36,7 @@ kids/
 └── dbFiles/                 # תיקייה לאחסון קבצי נתונים חיצוניים וגיבויים
     ├── sample.csv           # קובץ דוגמה (CSV)
     ├── sample.xlsx          # קובץ דוגמה (Excel)
-    └── kids_db_backup.dump  # קובץ גיבוי של בסיס הנתונים
+    └── routes_db_backup.dump  # קובץ גיבוי של בסיס הנתונים
 ```
 > הערה: בנוסף לקובץ התרשים המערכתי (`TOUR DIAGRAM fix.erdplus`), צורפו תרשימים ויזואליים הממחישים את הלוגיקה, הממשקים והקשרים בבסיס הנתונים שלנו. 
 
@@ -67,7 +67,7 @@ docker-compose up -d
    * קליק ימני על Servers -> Register -> Server.
    * בלשונית Connection למלא: 
      * **Host:** `db`
-     * **Database:** `kids_db`
+     * **Database:** `routes_db`
      * **Username:** `admin`
      * **Password:** `admin` 
    * לשמור ולראות את העץ נפתח.
@@ -86,13 +86,13 @@ python import_data.py
 ### 4. גיבוי ושחזור (Backup & Restore)
 **גיבוי המסד באמצעות CMD (בזמן הקונטיינר רץ):**
 ```cmd
-docker exec -t postgres_db pg_dump -U admin -F c kids_db > dbFiles/kids_db_backup.dump
+docker exec -t postgres_db pg_dump -U admin -F c routes_db > dbFiles/routes_db_backup.dump
 ```
 **(הקובץ יישמר בתיקיית dbFiles)**
 
 **שחזור מגיבוי (במידת הצורך):**
 ```cmd
-docker exec -i postgres_db pg_restore -U admin -d kids_db -1 < dbFiles/kids_db_backup.dump
+docker exec -i postgres_db pg_restore -U admin -d routes_db -1 < dbFiles/routes_db_backup.dump
 ```
 *(ניתן לבצע פעולות אלו גם ידנית דרך ממשק ה-pgAdmin בקליק ימני על בסיס הנתונים)*
 
