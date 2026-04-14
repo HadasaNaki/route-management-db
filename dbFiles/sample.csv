@@ -1,4 +1,6 @@
-id,product,price
-1,Toy Car,15.50
-2,Doll,20.00
-3,Puzzle,12.00
+ParticipantID,FullName,Email,Phone
+201,Sarah Connor,sarah.c@email.com,050-1112222
+202,Kyle Reese,kyle.r@email.com,052-3334444
+203,John Smith,john.s@email.com,054-5556666
+204,Dana Cohen,dana.c@email.com,051-7778888
+205,Lior Levi,lior.l@email.com,053-9990000
