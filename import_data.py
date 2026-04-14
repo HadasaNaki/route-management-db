@@ -21,6 +21,7 @@ def main():
     if os.path.exists(csv_path):
         print(f"Loading {csv_path}...")
         df_csv = pd.read_csv(csv_path)
+        df_csv.columns = df_csv.columns.str.lower()  # Postgres unquoted columns are lowercase
         df_csv.to_sql('participant', con=engine, if_exists='append', index=False)
         print("CSV imported successfully to table 'participant'!")
     else:
@@ -33,6 +34,7 @@ def main():
         df_excel = pd.read_excel(excel_path)
         # Ensure BookingDate is recognized
         df_excel['BookingDate'] = pd.to_datetime(df_excel['BookingDate'])
+        df_excel.columns = df_excel.columns.str.lower()
         df_excel.to_sql('booking', con=engine, if_exists='append', index=False)
         print("Excel imported successfully to table 'booking'!")
     else:
@@ -41,9 +43,9 @@ def main():
     # 3. Python Bulk Insert for LOCATION table (Method 2 requirement)
     print("Performing Python Bulk Insert for LOCATION table...")
     locations_data = {
-        'LocationID': [501, 502, 503, 504, 505],
-        'LocationName': ['Masada', 'Dead Sea', 'Western Wall', 'Sea of Galilee', 'Ramon Crater'],
-        'Category': ['Historic', 'Nature', 'Historic', 'Nature', 'Nature']
+        'locationid': [501, 502, 503, 504, 505],
+        'locationname': ['Masada', 'Dead Sea', 'Western Wall', 'Sea of Galilee', 'Ramon Crater'],
+        'category': ['Historic', 'Nature', 'Historic', 'Nature', 'Nature']
     }
     df_locations = pd.DataFrame(locations_data)
     df_locations.to_sql('location', con=engine, if_exists='append', index=False)
