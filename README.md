@@ -133,7 +133,17 @@ python import_data.py
 ```
 *הערה: אם זו הפעם הראשונה, יש לוודא שהתקנתם את התלויות בעזרת: `pip install pandas sqlalchemy psycopg2-binary openpyxl python-dotenv`*
 
-##  גיבוי  
+##  גיבוי   
+צילום מסך של גיבוי עי postgres 
+
+![צילום מסך גיבוי](Phase%201/backup/backup1.png)
+
+![צילום מסך גיבוי](Phase%201/backup/backup2.png)
+
+צילום מסך שחזור נתונים
+
+![צילום מסך שחזור](Phase%201/backup/restore.png)
+
 **גיבוי המסד באמצעות CMD (בזמן הקונטיינר רץ):**
 ```cmd
 docker exec -t postgres_db pg_dump -U admin -F c routes_db > dbFiles/routes_db_backup.dump
