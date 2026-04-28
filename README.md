@@ -60,18 +60,18 @@ routes/
 ## תרשימים    
 
  *תרשים 1: תרשים ישויות קשרים (DSD)*
-![תרשים יחסי המערכת](erdplus.png)
+![תרשים יחסי המערכת](./Phase%201/ERDandDSDfiles/erdplus.png)
 
 *תרשים 2: תרשים מבנה נתונים (ERD)*
-![סכמות מערכת](erdplus%20(1).png)
+![סכמות מערכת](Phase%201/ERDandDSDfiles/erdplus%20(1).png)
 
 ## סקריפטים של SQL 
 
 להלן הקישורים לקבצי ה-SQL המשמשים להקמת המערכת:
 
-* [יצירת טבלאות (Create Tables)](./init-db/02_createTables.sql) – סקריפט ליצירת המבנה של בסיס הנתונים.
-* [מחיקת טבלאות (Drop Tables)](./init-db/01_dropTables.sql) – סקריפט למחיקת כל הטבלאות הקיימות.
-* [הכנסת נתונים (Insert Data)](./init-db/03_mockaroo_data.sql) – סקריפט המכיל נתונים ראשוניים.
+* [יצירת טבלאות (Create Tables)](./Phase%201/scripts/02_createTables.sql) – סקריפט ליצירת המבנה של בסיס הנתונים.
+* [מחיקת טבלאות (Drop Tables)](Phase%201/scripts/01_dropTables.sql) – סקריפט למחיקת כל הטבלאות הקיימות.
+* [הכנסת נתונים (Insert Data)](Phase%201/scripts/03_mockaroo_data.sql) – סקריפט המכיל נתונים ראשוניים.
 ---
 ## נתונים
 ### 🚀 הוראות הפעלה ושימוש בשלבים
@@ -80,11 +80,11 @@ routes/
 
 1. **הזנה ידנית (Manual SQL Scripts):**
    שימוש בסקריפטים של `INSERT INTO` עבור נתונים קבועים ומבניים (כמו הגדרות בסיסיות של מסלולים ומדריכים).
-   * ניתן לראות את הסקריפט כאן: [insertTables.sql](./init-db/03_mockaroo_data.sql)
+   * ניתן לראות את הסקריפט כאן: [insertTables.sql](Phase%201/scripts/03_mockaroo_data.sql)
 
 2. **ייבוא נתונים חיצוניים (External Data Import - Python):**
    שימוש בסקריפט Python (`import_data.py`) הטוען נתונים מקבצי **CSV** ו-**Excel**. שיטה זו מדמה עבודה מול מקורות מידע חיצוניים.
-   * קבצי המקור: [sample.csv](./dbFiles/sample.csv), [sample.xlsx](./dbFiles/sample.xlsx)
+   * קבצי המקור: [sample.csv](Phase%201/mockData/sample.csv), [sample.xlsx](Phase%201/mockData/sample.xlsx)
 
 3. **יצירת נתונים מסיבית (Bulk Generation Script):**
    פיתוח סקריפט Python ייעודי (`bulk_generate.py`) המשתמש בספריית **Faker** כדי לייצר עשרות אלפי שורות של נתונים דמויים (Mock Data) עבור טבלאות המשתתפים והזמנות הטיולים.
@@ -95,12 +95,12 @@ routes/
 להלן צילומי מסך מתוך **pgAdmin** המוכיחים את קיום הנתונים בטבלאות השונות:
 
 #### טבלת משתתפים (Participant) - מעל 20,000 רשומות
-![צילום מסך טבלת משתתפים](./countparticipant.png)
+![צילום מסך טבלת משתתפים](Phase%201/ERDandDSDfiles/countparticipant.png)
 
-![צילום מסך טבלת משתתפים](./Participant.png)
+![צילום מסך טבלת משתתפים](Phase%201/ERDandDSDfiles/Participant.png)
 
 #### טבלת טיולים (Trip)
-![צילום מסך טבלת טיולים](./trip.png)
+![צילום מסך טבלת טיולים](Phase%201/ERDandDSDfiles/trip.png)
 ###  הרמת בסיס הנתונים (Docker)
 כדי להתחיל לעבוד, יש להפעיל את Docker Desktop. לאחר מכן, לפתוח את הטרמינל בתיקיית הפרויקט ולהריץ:
 ```bash
