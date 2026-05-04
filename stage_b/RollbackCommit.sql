@@ -1,3 +1,4 @@
+
 -- ===============================================================
 -- פקודות Rollback ו- Commit שלב ב' - RollbackCommit.sql
 -- ===============================================================
@@ -43,3 +44,4 @@ COMMIT;
 
 -- תצוגת בסיס הנתונים לאישור הסופי שהעסקה הושלמה והמסד נתונים מעודכן
 SELECT * FROM GUIDE WHERE GuideID = 1;
+>>>>>>> f32bdc3 (stage 2: Add scheme, reports and constraints (stage_b copies))

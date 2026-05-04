@@ -1,4 +1,4 @@
--- ===============================================================
+
 -- שאילתות שלב ב' - Queries.sql
 -- מערכת לניהול סיורים
 -- ===============================================================
@@ -213,3 +213,4 @@ WHERE LocationID NOT IN (
 DELETE FROM TRIP
 WHERE TripID NOT IN (SELECT TripID FROM BOOKING)
   AND DepartureDate < CURRENT_DATE;
+>>>>>>> f32bdc3 (stage 2: Add scheme, reports and constraints (stage_b copies))

@@ -1,3 +1,4 @@
+
 -- ===============================================================
 -- אילוצים שלב ב' - Constraints.sql
 -- תוספת של 3 אילוצים חדשים
@@ -17,3 +18,4 @@ CHECK (Status IN ('Paid', 'Pending', 'Cancelled'));
 ALTER TABLE ROUTE
 ADD CONSTRAINT chk_route_difficulty 
 CHECK (Difficulty IN ('Easy', 'Medium', 'Hard'));
+>>>>>>> f32bdc3 (stage 2: Add scheme, reports and constraints (stage_b copies))
