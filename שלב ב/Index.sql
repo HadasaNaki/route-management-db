@@ -41,4 +41,3 @@ CREATE INDEX idx_participant_email ON PARTICIPANT (Email);
 
 -- אחרי אינדקס
 EXPLAIN ANALYZE SELECT * FROM PARTICIPANT WHERE Email = 'sample@sample.com';
->>>>>>> f32bdc3 (stage 2: Add scheme, reports and constraints (stage_b copies))

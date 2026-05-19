@@ -1,0 +1,77 @@
+﻿erDiagram
+    GUIDE {
+        int GuideID PK
+        string FirstName
+        string LastName
+        string Phone
+        string Email UK
+    }
+    DIFFICULTYLEVEL {
+        int DifficultyID PK
+        string DifficultyName
+    }
+    ROUTE {
+        int RouteID PK
+        string RouteName
+        numeric EstimatedLength
+        int Duration
+        int DifficultyID FK
+    }
+    TOURSTATUS {
+        int TourStatusID PK
+        string StatusName
+    }
+    TRIP {
+        int TripID PK
+        date DepartureDate
+        int MaxCapacity
+        int TourStatusID FK
+        int GuideID FK
+        int RouteID FK
+    }
+    PARTICIPANT {
+        int ParticipantID PK
+        string FullName
+        string Email UK
+    }
+    REGISTRATIONSTATUS {
+        int RegistrationStatusID PK
+        string StatusName
+    }
+    BOOKING {
+        int BookingID PK
+        date BookingDate
+        int TripID FK
+        int RegistrationStatusID FK
+        int ParticipantID FK
+    }
+    PAYMENTSTATUS {
+        int PaymentStatusID PK
+        string StatusName
+    }
+    PAYMENT {
+        int PaymentID PK
+        numeric Amount
+        int BookingID FK
+        int PaymentStatusID FK
+    }
+    LOCATION {
+        int LocationID PK
+        string LocationName
+    }
+    PASSES_THROUGH {
+        int LocationID PK_FK
+        int RouteID PK_FK
+    }
+
+    GUIDE ||--o{ TRIP : "PK-FK"
+    DIFFICULTYLEVEL ||--o{ ROUTE : "PK-FK"
+    ROUTE ||--o{ TRIP : "PK-FK"
+    TOURSTATUS ||--o{ TRIP : "PK-FK"
+    PARTICIPANT ||--o{ BOOKING : "PK-FK"
+    TRIP ||--o{ BOOKING : "PK-FK"
+    REGISTRATIONSTATUS ||--o{ BOOKING : "PK-FK"
+    BOOKING ||--o{ PAYMENT : "PK-FK"
+    PAYMENTSTATUS ||--o{ PAYMENT : "PK-FK"
+    LOCATION ||--o{ PASSES_THROUGH : "PK-FK"
+    ROUTE ||--o{ PASSES_THROUGH : "PK-FK"

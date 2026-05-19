@@ -1,0 +1,45 @@
+﻿erDiagram
+    GUIDE ||--o{ TRIP : "leads"
+    DIFFICULTYLEVEL ||--o{ ROUTE : "categorizes"
+    ROUTE ||--o{ TRIP : "is core of"
+    TOURSTATUS ||--o{ TRIP : "tracks"
+    PARTICIPANT ||--o{ BOOKING : "submits"
+    TRIP ||--o{ BOOKING : "receives"
+    REGISTRATIONSTATUS ||--o{ BOOKING : "tracks"
+    BOOKING ||--o{ PAYMENT : "funded by"
+    PAYMENTSTATUS ||--o{ PAYMENT : "tracks"
+    LOCATION }o--o{ ROUTE : "passes through"
+
+    GUIDE {
+        int GuideID PK
+    }
+    DIFFICULTYLEVEL {
+        int DifficultyID PK
+    }
+    ROUTE {
+        int RouteID PK
+    }
+    TOURSTATUS {
+        int TourStatusID PK
+    }
+    TRIP {
+        int TripID PK
+    }
+    PARTICIPANT {
+        int ParticipantID PK
+    }
+    REGISTRATIONSTATUS {
+        int RegistrationStatusID PK
+    }
+    BOOKING {
+        int BookingID PK
+    }
+    PAYMENTSTATUS {
+        int PaymentStatusID PK
+    }
+    PAYMENT {
+        int PaymentID PK
+    }
+    LOCATION {
+        int LocationID PK
+    }

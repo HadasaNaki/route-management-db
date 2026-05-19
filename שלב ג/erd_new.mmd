@@ -1,0 +1,42 @@
+﻿erDiagram
+    GUIDE ||--o{ GUIDEDTOUR : "leads"
+    DIFFICULTYLEVEL ||--o{ ROUTE : "defines"
+    ROUTE ||--o{ GUIDEDTOUR : "followed in"
+    TOURSTATUS ||--o{ GUIDEDTOUR : "has"
+    CUSTOMER ||--o{ REGISTRATION : "makes"
+    GUIDEDTOUR ||--o{ REGISTRATION : "receives"
+    REGISTRATIONSTATUS ||--o{ REGISTRATION : "has"
+    REGISTRATION ||--o{ PAYMENT : "paid via"
+    PAYMENTSTATUS ||--o{ PAYMENT : "has"
+
+    GUIDE {
+        int GuideID PK
+        string FullDetails
+    }
+    DIFFICULTYLEVEL {
+        int DifficultyID PK
+    }
+    ROUTE {
+        int RouteID PK
+    }
+    TOURSTATUS {
+        int TourStatusID PK
+    }
+    GUIDEDTOUR {
+        int TourID PK
+    }
+    CUSTOMER {
+        int CustomerID PK
+    }
+    REGISTRATIONSTATUS {
+        int RegistrationStatusID PK
+    }
+    REGISTRATION {
+        int RegistrationID PK
+    }
+    PAYMENTSTATUS {
+        int PaymentStatusID PK
+    }
+    PAYMENT {
+        int PaymentID PK
+    }

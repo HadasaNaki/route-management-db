@@ -1,0 +1,71 @@
+﻿erDiagram
+    GUIDE {
+        int GuideID PK
+        string FirstName
+        string LastName
+        string Phone
+        string Email UK
+    }
+    DIFFICULTYLEVEL {
+        int DifficultyID PK
+        string DifficultyName
+    }
+    ROUTE {
+        int RouteID PK
+        string Name
+        numeric EstimatedLength
+        int EstimatedDuration
+        int DifficultyID FK
+    }
+    TOURSTATUS {
+        int TourStatusID PK
+        string StatusName
+    }
+    GUIDEDTOUR {
+        int TourID PK
+        date StartDate
+        int MaxParticipants
+        int TourStatusID FK
+        int GuideID FK
+        int RouteID FK
+    }
+    CUSTOMER {
+        int CustomerID PK
+        string FullName
+        string Phone
+        string Email UK
+    }
+    REGISTRATIONSTATUS {
+        int RegistrationStatusID PK
+        string StatusName
+    }
+    REGISTRATION {
+        int RegistrationID PK
+        date RegistrationDate
+        numeric AmountToPay
+        int TourID FK
+        int RegistrationStatusID FK
+        int CustomerID FK
+    }
+    PAYMENTSTATUS {
+        int PaymentStatusID PK
+        string StatusName
+    }
+    PAYMENT {
+        int PaymentID PK
+        date PaymentDate
+        numeric Amount
+        string PaymentMethod
+        int RegistrationID FK
+        int PaymentStatusID FK
+    }
+
+    GUIDE ||--o{ GUIDEDTOUR : "PK-FK"
+    DIFFICULTYLEVEL ||--o{ ROUTE : "PK-FK"
+    ROUTE ||--o{ GUIDEDTOUR : "PK-FK"
+    TOURSTATUS ||--o{ GUIDEDTOUR : "PK-FK"
+    CUSTOMER ||--o{ REGISTRATION : "PK-FK"
+    GUIDEDTOUR ||--o{ REGISTRATION : "PK-FK"
+    REGISTRATIONSTATUS ||--o{ REGISTRATION : "PK-FK"
+    REGISTRATION ||--o{ PAYMENT : "PK-FK"
+    PAYMENTSTATUS ||--o{ PAYMENT : "PK-FK"
