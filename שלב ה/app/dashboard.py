@@ -85,8 +85,8 @@ class DashboardScreen(tk.Frame):
             ("amounttopay",  "Amount",     90),
             ("statusname",   "Status",     120),
         ]
-        _, tree = w.scrolled_tree(recent_frame, cols, height=10)
-        tree.pack(fill=tk.BOTH, expand=True, padx=8, pady=8)
+        outer, tree = w.scrolled_tree(recent_frame, cols, height=10)
+        outer.pack(fill=tk.BOTH, expand=True, padx=8, pady=8)
 
         rows = db.fetch("""
             SELECT b.BookingID, p.FullName AS participantname,
