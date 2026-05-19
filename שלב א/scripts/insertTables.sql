@@ -33,23 +33,3 @@ INSERT INTO LOCATION (LocationID, LocationName, Category) VALUES (3, 'Banias', '
 INSERT INTO PASSES_THROUGH (LocationID, RouteID) VALUES (1, 101);
 INSERT INTO PASSES_THROUGH (LocationID, RouteID) VALUES (2, 102);
 INSERT INTO PASSES_THROUGH (LocationID, RouteID) VALUES (3, 103);
-
--- Inserting Participants
-INSERT INTO PARTICIPANT (ParticipantID, FullName, Email, Phone) VALUES (1, 'Avraham Israel', 'avi@gmail.com', '050-1111111');
-INSERT INTO PARTICIPANT (ParticipantID, FullName, Email, Phone) VALUES (2, 'Moshe Levi', 'moshe@gmail.com', '052-2222222');
-INSERT INTO PARTICIPANT (ParticipantID, FullName, Email, Phone) VALUES (3, 'Rachel Cohen', 'rachel@gmail.com', '054-3333333');
-
--- Inserting Bookings
-INSERT INTO BOOKING (BookingID, BookingDate, Status, TripID, ParticipantID) VALUES (1, '2026-05-10', 'Confirmed', 1001, 1);
-INSERT INTO BOOKING (BookingID, BookingDate, Status, TripID, ParticipantID) VALUES (2, '2026-05-11', 'Pending', 1002, 2);
-INSERT INTO BOOKING (BookingID, BookingDate, Status, TripID, ParticipantID) VALUES (3, '2026-05-12', 'Confirmed', 1003, 3);
-
--- Inserting Locations
-INSERT INTO LOCATION (LocationID, LocationName, Category) VALUES (1, 'Machtesh Ramon', 'Nature');
-INSERT INTO LOCATION (LocationID, LocationName, Category) VALUES (2, 'Western Wall', 'Historic');
-INSERT INTO LOCATION (LocationID, LocationName, Category) VALUES (3, 'Banias', 'Nature');
-
--- Inserting Passes_Through
-INSERT INTO PASSES_THROUGH (LocationID, RouteID) VALUES (1, 101);
-INSERT INTO PASSES_THROUGH (LocationID, RouteID) VALUES (2, 102);
-INSERT INTO PASSES_THROUGH (LocationID, RouteID) VALUES (3, 103);
