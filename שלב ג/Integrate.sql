@@ -26,7 +26,16 @@ ALTER TABLE REGISTRATION RENAME COLUMN BookingDate TO RegistrationDate;
 ALTER TABLE REGISTRATION RENAME COLUMN TripID      TO TourID;
 
 -- PAYMENT (BookingID FK → RegistrationID)
-ALTER TABLE PAYMENT RENAME COLUMN BookingID TO RegistrationID;
+-- Only needed if PAYMENT existed before Stage 3 (Stage 2 DB); safe to skip otherwise
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'payment' AND column_name = 'bookingid'
+    ) THEN
+        ALTER TABLE PAYMENT RENAME COLUMN BookingID TO RegistrationID;
+    END IF;
+END $$;
 
 -- ROUTE
 ALTER TABLE ROUTE RENAME COLUMN RouteName TO Name;
