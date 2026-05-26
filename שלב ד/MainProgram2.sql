@@ -29,10 +29,10 @@ BEGIN
         EXIT WHEN NOT FOUND;
 
         v_count := v_count + 1;
-        RAISE NOTICE 'BookingID: % | Trip: % | Departs: % | Status: % | Paid: % / %',
-            v_row.BookingID,
+        RAISE NOTICE 'RegistrationID: % | Trip: % | Start: % | Status: % | Paid: % / %',
+            v_row.RegistrationID,
             v_row.RouteName,
-            v_row.DepartureDate,
+            v_row.StartDate,
             v_row.BookingStatus,
             v_row.TotalPaid,
             v_row.AmountToPay;
@@ -40,9 +40,9 @@ BEGIN
     CLOSE v_ref;
 
     IF v_count = 0 THEN
-        RAISE NOTICE 'No booking history found for participant 1.';
+        RAISE NOTICE 'No registration history found for participant 1.';
     ELSE
-        RAISE NOTICE 'Total bookings found: %', v_count;
+        RAISE NOTICE 'Total registrations found: %', v_count;
     END IF;
 
     -- ── Part 2: Call proc_register_participant ─────────────────────
@@ -55,20 +55,20 @@ BEGIN
         p_notes          => 'Registered via MainProgram2'
     );
 
-    -- Verify the new booking was created
+    -- Verify the new registration was created
     RAISE NOTICE '';
-    RAISE NOTICE '--- Verification: Booking table after registration ---';
+    RAISE NOTICE '--- Verification: Registration table after registration ---';
     FOR v_row IN
-        SELECT b.BookingID, b.BookingDate, b.TripID,
+        SELECT b.RegistrationID, b.RegistrationDate, b.TourID,
                p.FullName, b.AmountToPay, rs.StatusName
-        FROM BOOKING b
+        FROM REGISTRATION b
         JOIN PARTICIPANT p          ON b.ParticipantID = p.ParticipantID
         JOIN REGISTRATIONSTATUS rs  ON b.RegistrationStatusID = rs.RegistrationStatusID
-        WHERE b.TripID = 1002
-        ORDER BY b.BookingID
+        WHERE b.TourID = 1002
+        ORDER BY b.RegistrationID
     LOOP
-        RAISE NOTICE 'BookingID: % | Date: % | Participant: % | Amount: % | Status: %',
-            v_row.BookingID, v_row.BookingDate, v_row.FullName,
+        RAISE NOTICE 'RegistrationID: % | Date: % | Participant: % | Amount: % | Status: %',
+            v_row.RegistrationID, v_row.RegistrationDate, v_row.FullName,
             v_row.AmountToPay, v_row.StatusName;
     END LOOP;
 

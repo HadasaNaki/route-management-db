@@ -13,7 +13,7 @@ class PaymentsScreen(BaseCRUDScreen):
     LIST_QUERY = """
         SELECT pa.PaymentID,
                p.FullName                              AS participantname,
-               r.RouteName,
+               r.Name                                 AS routename,
                TO_CHAR(pa.PaymentDate,'YYYY-MM-DD')   AS paymentdate,
                pa.Amount,
                pa.PaymentMethod,
@@ -21,11 +21,11 @@ class PaymentsScreen(BaseCRUDScreen):
                pa.ReferenceNumber,
                pa.Notes
         FROM PAYMENT pa
-        JOIN BOOKING b         ON pa.BookingID       = b.BookingID
-        JOIN PARTICIPANT p     ON b.ParticipantID    = p.ParticipantID
-        JOIN TRIP t            ON b.TripID           = t.TripID
-        JOIN ROUTE r           ON t.RouteID          = r.RouteID
-        JOIN PAYMENTSTATUS ps  ON pa.PaymentStatusID = ps.PaymentStatusID
+        JOIN REGISTRATION b    ON pa.RegistrationID  = b.RegistrationID
+        JOIN PARTICIPANT p      ON b.ParticipantID    = p.ParticipantID
+        JOIN GUIDEDTOUR t       ON b.TourID           = t.TripID
+        JOIN ROUTE r            ON t.RouteID          = r.RouteID
+        JOIN PAYMENTSTATUS ps   ON pa.PaymentStatusID = ps.PaymentStatusID
         ORDER BY pa.PaymentID
     """
     LIST_COLS = [
@@ -38,18 +38,18 @@ class PaymentsScreen(BaseCRUDScreen):
         ("referencenumber", "Reference",      120),
     ]
     FORM_FIELDS = [
-        FormField("Booking", "bookingid", kind="combo",
+        FormField("Registration", "registrationid", kind="combo",
                   fk_query="""
-                      SELECT b.BookingID,
-                             p.FullName||' → '||r.RouteName||
-                             ' ('||TO_CHAR(t.DepartureDate,'DD/MM/YY')||')' AS label
-                      FROM BOOKING b
+                      SELECT b.RegistrationID,
+                             p.FullName||' → '||r.Name||
+                             ' ('||TO_CHAR(t.StartDate,'DD/MM/YY')||')' AS label
+                      FROM REGISTRATION b
                       JOIN PARTICIPANT p ON b.ParticipantID=p.ParticipantID
-                      JOIN TRIP t ON b.TripID=t.TripID
+                      JOIN GUIDEDTOUR t ON b.TourID=t.TripID
                       JOIN ROUTE r ON t.RouteID=r.RouteID
-                      ORDER BY b.BookingID
+                      ORDER BY b.RegistrationID
                   """,
-                  fk_id_col="bookingid", fk_lbl_col="label"),
+                  fk_id_col="registrationid", fk_lbl_col="label"),
         FormField("Payment Date (YYYY-MM-DD)", "paymentdate"),
         FormField("Amount (₪)",                "amount"),
         FormField("Payment Method",            "paymentmethod"),
@@ -63,7 +63,7 @@ class PaymentsScreen(BaseCRUDScreen):
     INSERT_SQL = """
         INSERT INTO PAYMENT
             (PaymentID, PaymentDate, Amount, PaymentMethod,
-             ReferenceNumber, Notes, BookingID, PaymentStatusID)
+             ReferenceNumber, Notes, RegistrationID, PaymentStatusID)
         VALUES (
             (SELECT COALESCE(MAX(PaymentID),0)+1 FROM PAYMENT),
             COALESCE(NULLIF(%(paymentdate)s,'')::DATE, CURRENT_DATE),
@@ -71,7 +71,7 @@ class PaymentsScreen(BaseCRUDScreen):
             %(paymentmethod)s,
             NULLIF(%(referencenumber)s,''),
             NULLIF(%(notes)s,''),
-            %(bookingid)s,
+            %(registrationid)s,
             %(paymentstatusid)s
         )
     """
@@ -82,14 +82,14 @@ class PaymentsScreen(BaseCRUDScreen):
             PaymentMethod   = %(paymentmethod)s,
             ReferenceNumber = NULLIF(%(referencenumber)s,''),
             Notes           = NULLIF(%(notes)s,''),
-            BookingID       = %(bookingid)s,
+            RegistrationID  = %(registrationid)s,
             PaymentStatusID = %(paymentstatusid)s
         WHERE PaymentID = %(id)s
     """
     DELETE_SQL = "DELETE FROM PAYMENT WHERE PaymentID = %s"
     FETCH_SQL  = """
         SELECT PaymentID,
-               BookingID AS bookingid,
+               RegistrationID AS registrationid,
                TO_CHAR(PaymentDate,'YYYY-MM-DD') AS paymentdate,
                Amount AS amount, PaymentMethod AS paymentmethod,
                ReferenceNumber AS referencenumber, Notes AS notes,

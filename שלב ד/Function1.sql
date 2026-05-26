@@ -16,22 +16,22 @@ AS $$
 DECLARE
     v_cursor    REFCURSOR := 'trip_revenue_cursor';
 
-    -- Explicit cursor over all trips joined to route + guide
+    -- Explicit cursor over all tours joined to route + guide
     c_trips CURSOR FOR
         SELECT
             t.TripID,
-            t.DepartureDate,
-            t.MaxCapacity,
+            t.StartDate,
+            t.MaxParticipants,
             t.CurrentBookings,
             t.Price,
-            r.RouteName,
+            r.Name              AS RouteName,
             g.FirstName || ' ' || g.LastName AS GuideName,
-            ts.StatusName AS TripStatus
-        FROM TRIP t
+            ts.StatusName       AS TripStatus
+        FROM GUIDEDTOUR t
         JOIN ROUTE r         ON t.RouteID  = r.RouteID
         JOIN GUIDE g         ON t.GuideID  = g.GuideID
         LEFT JOIN TOURSTATUS ts ON t.TourStatusID = ts.TourStatusID
-        ORDER BY t.DepartureDate;
+        ORDER BY t.StartDate;
 
     -- Record to hold one row from the cursor
     v_trip      RECORD;
@@ -49,9 +49,9 @@ BEGIN
         TripID          INT,
         RouteName       VARCHAR(200),
         GuideName       VARCHAR(200),
-        DepartureDate   DATE,
+        StartDate       DATE,
         TripStatus      VARCHAR(50),
-        MaxCapacity     INT,
+        MaxParticipants INT,
         CurrentBookings INT,
         ExpectedRevenue NUMERIC(10,2),
         OccupancyPct    NUMERIC(5,2),
@@ -70,13 +70,13 @@ BEGIN
         v_results_exist := TRUE;
 
         -- Guard against division by zero
-        IF v_trip.MaxCapacity = 0 THEN
-            RAISE EXCEPTION 'Trip % has MaxCapacity = 0 — invalid data', v_trip.TripID;
+        IF v_trip.MaxParticipants = 0 THEN
+            RAISE EXCEPTION 'Tour % has MaxParticipants = 0 — invalid data', v_trip.TripID;
         END IF;
 
         -- Calculate occupancy rate and expected revenue (implicit cursor via formula)
         v_occupancy_rate := ROUND(
-            (v_trip.CurrentBookings::NUMERIC / v_trip.MaxCapacity::NUMERIC) * 100, 2
+            (v_trip.CurrentBookings::NUMERIC / v_trip.MaxParticipants::NUMERIC) * 100, 2
         );
 
         -- Classify occupancy
@@ -93,9 +93,9 @@ BEGIN
             v_trip.TripID,
             v_trip.RouteName,
             v_trip.GuideName,
-            v_trip.DepartureDate,
+            v_trip.StartDate,
             COALESCE(v_trip.TripStatus, 'Unknown'),
-            v_trip.MaxCapacity,
+            v_trip.MaxParticipants,
             v_trip.CurrentBookings,
             ROUND(v_trip.CurrentBookings * v_trip.Price, 2),
             v_occupancy_rate,

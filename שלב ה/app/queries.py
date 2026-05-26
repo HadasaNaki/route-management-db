@@ -11,12 +11,12 @@ import db
 # ── Stage 2 queries ──────────────────────────────────────────
 QUERIES = {
     "Q1: Participants in Historic/Nature tours": {
-        "description": "Find all participants who booked a tour that passes through a 'Historic' or 'Nature' location.",
+        "description": "Find all participants who registered for a tour that passes through a 'Historic' or 'Nature' location.",
         "sql": """
             SELECT DISTINCT p.FullName, p.Phone, p.Email
             FROM PARTICIPANT p
-            JOIN BOOKING b      ON p.ParticipantID  = b.ParticipantID
-            JOIN TRIP t         ON b.TripID          = t.TripID
+            JOIN REGISTRATION b ON p.ParticipantID  = b.ParticipantID
+            JOIN GUIDEDTOUR t   ON b.TourID          = t.TripID
             JOIN PASSES_THROUGH pt ON t.RouteID      = pt.RouteID
             JOIN LOCATION l     ON pt.LocationID     = l.LocationID
             WHERE l.Category IN ('Historic', 'Nature')
@@ -26,71 +26,71 @@ QUERIES = {
         "params": [],
     },
     "Q2: Routes with ≥ N trips in 2026": {
-        "description": "Show routes that have at least N scheduled trips in 2026. Enter the minimum trip count.",
+        "description": "Show routes that have at least N scheduled tours in 2026. Enter the minimum tour count.",
         "sql": """
-            SELECT r.RouteName, COUNT(t.TripID) AS TotalTrips
+            SELECT r.Name AS RouteName, COUNT(t.TripID) AS TotalTrips
             FROM ROUTE r
-            JOIN TRIP t ON r.RouteID = t.RouteID
-            WHERE EXTRACT(YEAR FROM t.DepartureDate) = 2026
-            GROUP BY r.RouteID, r.RouteName
+            JOIN GUIDEDTOUR t ON r.RouteID = t.RouteID
+            WHERE EXTRACT(YEAR FROM t.StartDate) = 2026
+            GROUP BY r.RouteID, r.Name
             HAVING COUNT(t.TripID) >= %s
             ORDER BY TotalTrips DESC
         """,
-        "cols": [("routename","Route Name",240), ("totaltrips","# Trips",100)],
-        "params": [("Minimum trips (e.g. 1)", "1")],
+        "cols": [("routename","Route Name",240), ("totaltrips","# Tours",100)],
+        "params": [("Minimum tours (e.g. 1)", "1")],
     },
     "Q3: Guides not assigned in May 2026": {
-        "description": "List guides who have no trips scheduled in May 2026.",
+        "description": "List guides who have no tours scheduled in May 2026.",
         "sql": """
             SELECT g.FirstName||' '||g.LastName AS GuideName,
                    g.Phone, g.Email
             FROM GUIDE g
             WHERE g.GuideID NOT IN (
-                SELECT t.GuideID FROM TRIP t
-                WHERE EXTRACT(YEAR FROM t.DepartureDate)  = 2026
-                  AND EXTRACT(MONTH FROM t.DepartureDate) = 5
+                SELECT t.GuideID FROM GUIDEDTOUR t
+                WHERE EXTRACT(YEAR FROM t.StartDate)  = 2026
+                  AND EXTRACT(MONTH FROM t.StartDate) = 5
             )
             ORDER BY g.LastName
         """,
         "cols": [("guidename","Guide Name",200), ("phone","Phone",130), ("email","Email",200)],
         "params": [],
     },
-    "Q4: Most popular booking month in 2026": {
-        "description": "Find the month in 2026 with the highest number of bookings.",
+    "Q4: Most popular registration month in 2026": {
+        "description": "Find the month in 2026 with the highest number of registrations.",
         "sql": """
             SELECT TO_CHAR(TO_DATE(month_num::text,'MM'),'Month') AS MonthName,
-                   TotalBookings
+                   TotalRegistrations
             FROM (
-                SELECT EXTRACT(MONTH FROM BookingDate)::INT AS month_num,
-                       COUNT(*) AS TotalBookings
-                FROM BOOKING
-                WHERE EXTRACT(YEAR FROM BookingDate) = 2026
-                GROUP BY EXTRACT(MONTH FROM BookingDate)
-                ORDER BY TotalBookings DESC
+                SELECT EXTRACT(MONTH FROM RegistrationDate)::INT AS month_num,
+                       COUNT(*) AS TotalRegistrations
+                FROM REGISTRATION
+                WHERE EXTRACT(YEAR FROM RegistrationDate) = 2026
+                GROUP BY EXTRACT(MONTH FROM RegistrationDate)
+                ORDER BY TotalRegistrations DESC
                 LIMIT 5
             ) sub
         """,
-        "cols": [("monthname","Month",150), ("totalbookings","Bookings",120)],
+        "cols": [("monthname","Month",150), ("totalregistrations","Registrations",120)],
         "params": [],
     },
-    "Q5: Trips with above-average capacity": {
-        "description": "Show trips whose MaxCapacity is greater than the overall average, ordered by date.",
+    "Q5: Tours with above-average capacity": {
+        "description": "Show tours whose MaxParticipants is greater than the overall average, ordered by date.",
         "sql": """
-            SELECT t.TripID, r.RouteName,
+            SELECT t.TripID, r.Name AS RouteName,
                    g.FirstName||' '||g.LastName AS GuideName,
-                   TO_CHAR(t.DepartureDate,'YYYY-MM-DD') AS DepartureDate,
-                   t.MaxCapacity, ts.StatusName AS Status
-            FROM TRIP t
+                   TO_CHAR(t.StartDate,'YYYY-MM-DD') AS StartDate,
+                   t.MaxParticipants, ts.StatusName AS Status
+            FROM GUIDEDTOUR t
             JOIN ROUTE r           ON t.RouteID      = r.RouteID
             JOIN GUIDE g           ON t.GuideID      = g.GuideID
             LEFT JOIN TOURSTATUS ts ON t.TourStatusID = ts.TourStatusID
-            WHERE t.MaxCapacity > (SELECT AVG(MaxCapacity) FROM TRIP)
-            ORDER BY t.DepartureDate
+            WHERE t.MaxParticipants > (SELECT AVG(MaxParticipants) FROM GUIDEDTOUR)
+            ORDER BY t.StartDate
         """,
         "cols": [
-            ("tripid","Trip ID",70), ("routename","Route",180),
-            ("guidename","Guide",160), ("departuredate","Departure",110),
-            ("maxcapacity","Max Cap",80), ("status","Status",130),
+            ("tripid","Tour ID",70), ("routename","Route",180),
+            ("guidename","Guide",160), ("startdate","Start Date",110),
+            ("maxparticipants","Max Cap",80), ("status","Status",130),
         ],
         "params": [],
     },
@@ -110,18 +110,18 @@ PROGRAMS = {
         "call": "func_get_participant_history",
         "params": [("Participant ID", "1")],
     },
-    "P3: Register Participant for a Trip": {
-        "description": "Calls proc_register_participant(trip_id, participant_id, notes) — validates and creates a new booking.",
+    "P3: Register Participant for a Tour": {
+        "description": "Calls proc_register_participant(trip_id, participant_id, notes) — validates and creates a new registration.",
         "kind": "procedure",
         "call": "proc_register_participant",
         "params": [
-            ("Trip ID",        "1002"),
+            ("Tour ID",        "1002"),
             ("Participant ID", "2"),
             ("Notes",          "Registered from GUI"),
         ],
     },
-    "P4: Process Expired Bookings": {
-        "description": "Calls proc_process_expired_bookings() — cancels stale bookings for trips that departed more than 7 days ago.",
+    "P4: Process Expired Registrations": {
+        "description": "Calls proc_process_expired_bookings() — cancels stale registrations for tours that started more than 7 days ago.",
         "kind": "procedure",
         "call": "proc_process_expired_bookings()",
         "params": [],

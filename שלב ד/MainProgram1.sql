@@ -31,14 +31,14 @@ BEGIN
 
         v_line_count := v_line_count + 1;
 
-        RAISE NOTICE 'Trip % - % | Guide: % | Departs: % | Status: % | % / % booked | Revenue: % NIS | Occupancy: % pct [%]',
+        RAISE NOTICE 'Tour % - % | Guide: % | Start: % | Status: % | % / % booked | Revenue: % NIS | Occupancy: % pct [%]',
             v_row.TripID,
             v_row.RouteName,
             v_row.GuideName,
-            v_row.DepartureDate,
+            v_row.StartDate,
             v_row.TripStatus,
             v_row.CurrentBookings,
-            v_row.MaxCapacity,
+            v_row.MaxParticipants,
             v_row.ExpectedRevenue,
             v_row.OccupancyPct,
             v_row.Classification;

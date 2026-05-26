@@ -13,16 +13,16 @@ CREATE OR REPLACE PROCEDURE proc_process_expired_bookings()
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    -- Explicit cursor: bookings for trips departed more than 7 days ago
+    -- Explicit cursor: registrations for tours that started more than 7 days ago
     -- that are still in 'Needs Action' status
     c_expired CURSOR FOR
-        SELECT b.BookingID, b.TripID, b.ParticipantID,
-               t.DepartureDate
-        FROM BOOKING b
-        JOIN TRIP t ON b.TripID = t.TripID
+        SELECT b.RegistrationID, b.TourID, b.ParticipantID,
+               t.StartDate
+        FROM REGISTRATION b
+        JOIN GUIDEDTOUR t ON b.TourID = t.TripID
         WHERE b.RegistrationStatusID = 1          -- Needs Action
-          AND t.DepartureDate < CURRENT_DATE - 7  -- Trip departed > 7 days ago
-        ORDER BY t.DepartureDate, b.BookingID;
+          AND t.StartDate < CURRENT_DATE - 7      -- Tour started > 7 days ago
+        ORDER BY t.StartDate, b.RegistrationID;
 
     v_row           RECORD;
     v_cancelled     INT := 0;
@@ -30,7 +30,7 @@ DECLARE
     v_open_count    INT;
 
 BEGIN
-    RAISE NOTICE 'Starting expired bookings cleanup — date threshold: %',
+    RAISE NOTICE 'Starting expired registrations cleanup — date threshold: %',
         CURRENT_DATE - 7;
 
     OPEN c_expired;
@@ -38,44 +38,44 @@ BEGIN
         FETCH c_expired INTO v_row;
         EXIT WHEN NOT FOUND;
 
-        -- Cancel the booking
-        UPDATE BOOKING
+        -- Cancel the registration
+        UPDATE REGISTRATION
         SET RegistrationStatusID = 3   -- Cancelled
-        WHERE BookingID = v_row.BookingID;
+        WHERE RegistrationID = v_row.RegistrationID;
 
-        -- Decrement CurrentBookings on the trip
-        UPDATE TRIP
+        -- Decrement CurrentBookings on the tour
+        UPDATE GUIDEDTOUR
         SET CurrentBookings = GREATEST(CurrentBookings - 1, 0)
-        WHERE TripID = v_row.TripID;
+        WHERE TripID = v_row.TourID;
 
         v_cancelled := v_cancelled + 1;
 
-        RAISE NOTICE 'Cancelled BookingID % (TripID %, departed %)',
-            v_row.BookingID, v_row.TripID, v_row.DepartureDate;
+        RAISE NOTICE 'Cancelled RegistrationID % (TourID %, started %)',
+            v_row.RegistrationID, v_row.TourID, v_row.StartDate;
 
-        -- Check if all bookings for this trip are now resolved (none pending)
+        -- Check if all registrations for this tour are now resolved (none pending)
         SELECT COUNT(*) INTO v_open_count
-        FROM BOOKING
-        WHERE TripID = v_row.TripID
+        FROM REGISTRATION
+        WHERE TourID = v_row.TourID
           AND RegistrationStatusID = 1;   -- Needs Action
 
         IF v_open_count = 0 THEN
-            -- Mark trip as Completed
-            UPDATE TRIP
+            -- Mark tour as Completed
+            UPDATE GUIDEDTOUR
             SET TourStatusID = 5   -- Completed
-            WHERE TripID = v_row.TripID
+            WHERE TripID = v_row.TourID
               AND TourStatusID != 5;
 
             IF FOUND THEN
                 v_trips_closed := v_trips_closed + 1;
-                RAISE NOTICE 'Trip % marked as Completed.', v_row.TripID;
+                RAISE NOTICE 'Tour % marked as Completed.', v_row.TourID;
             END IF;
         END IF;
 
     END LOOP;
     CLOSE c_expired;
 
-    RAISE NOTICE 'Cleanup complete: % booking(s) cancelled, % trip(s) marked Completed.',
+    RAISE NOTICE 'Cleanup complete: % registration(s) cancelled, % tour(s) marked Completed.',
         v_cancelled, v_trips_closed;
 
 EXCEPTION
