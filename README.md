@@ -659,4 +659,100 @@ EXPLAIN ANALYZE SELECT * FROM TRIP WHERE DepartureDate = '2026-05-15';
 
 **הסבר תוצאות זמני הריצה:** בעת הפעלת טבלת `EXPLAIN ANALYZE` המערכת תחילה מחשבת במחיר יקר באמצעות `Seq Scan`. אחרי בניית האינדקס, אנו מקבלים חיתוך אדיר בעלות (Cost) עם אינדיקצייה לביצוע של `Index Scan`.
 
+---
+
+# Stage 3: Integration and Views
+
+> דוח מפורט מלא (כולל אלגוריתם הינדוס לאחור, תרשימי DSD/ERD, החלטות עיצוב ופלטי שאילתות) נמצא בקובץ:
+> **[דוח פרויקט שלב ג](./שלב%20ג/דוח%20פרויקט%20שלב%20ג.md)**
+
+## שיטת האינטגרציה
+
+בחרנו בשיטה המשלבת **מיגרציה ואיחוד סכמות**: המערכת של האגף השני (פרויקט `DB_5786_6363_2029`) נטענת תחילה לסכמה נפרדת בשם `group2`, ולאחר מכן הנתונים ממוזגים אל הסכמה המשולבת (`public`) באמצעות `INSERT ... SELECT ... ON CONFLICT DO NOTHING`. כך נשמרים הן הנתונים שלנו והן נתוני האגף השני בבסיס נתונים אחד ומאוחד.
+
+האינטגרציה ברמת העיצוב בוצעה **ללא מחיקת טבלאות** — אך ורק בעזרת פקודות `ALTER TABLE` / `CREATE TABLE` / `UPDATE` להתאמת הסכמה הקיימת לסכמה המשולבת.
+
+## קבצים מרכזיים
+
+| קובץ | תיאור |
+|---|---|
+| [שלב ג/Integrate.sql](./שלב%20ג/Integrate.sql) | פקודות שינוי ויצירת הטבלאות לקבלת הסכמה המשולבת |
+| [שלב ג/Views.sql](./שלב%20ג/Views.sql) | יצירת המבטים + 2 שאילתות על כל מבט |
+| [שלב ג/erd_new.mmd](./שלב%20ג/erd_new.mmd) · [erd_joint.mmd](./שלב%20ג/erd_joint.mmd) | ERD האגף החדש + ERD משולב |
+| [שלב ג/dsd_new.mmd](./שלב%20ג/dsd_new.mmd) · [dsd_joint.mmd](./שלב%20ג/dsd_joint.mmd) | DSD האגף החדש + DSD משולב |
+| [שלב ג/backup3.dump](./שלב%20ג/backup3.dump) | גיבוי מעודכן של הבסיס המשולב |
+| [init-db/04_other_schema.sql](./init-db/04_other_schema.sql) · [05_other_data.sql](./init-db/05_other_data.sql) · [06_integrate_data.sql](./init-db/06_integrate_data.sql) | טעינת סכמת `group2` ומיזוג הנתונים אל `public` בעת עליית ה‑Docker |
+
+## מבטים (Views)
+
+1. **`V_UpcomingTripsDetails`** — נקודת המבט של האגף המקורי: סיורים עתידיים בצירוף מסלול, רמת קושי ומדריך (4 טבלאות).
+2. **`V_CustomerPaymentLedger`** — נקודת המבט של האגף החדש: יתרות תשלום לכל רישום (REGISTRATION + PARTICIPANT + PAYMENT + סטטוסים).
+3. **`V_LocationPopularityAndStatus`** — מבט משולב: פופולריות מיקומים מול סטטוס הסיורים.
+
+לכל מבט נכתבו **2 שאילתות בעלות משמעות** (ראו `Views.sql` והדוח המפורט).
+
+---
+
+# Stage 4: PL/pgSQL Programming
+
+> דוח מפורט מלא (תיאור, קוד והוכחת הרצה לכל תוכנית) נמצא בקובץ:
+> **[דוח פרויקט שלב ד](./שלב%20ד/דוח%20פרויקט%20שלב%20ד.md)**
+
+כל התוכניות נכתבו מעל בסיס הנתונים **המשולב** משלב ג', ומשלבות מגוון אלמנטים: Explicit & Implicit Cursors, החזרת `REFCURSOR`, פקודות DML, הסתעפויות, לולאות, רשומות (`%ROWTYPE`/`RECORD`) וטיפול בחריגות (`EXCEPTION`).
+
+| סוג | קובץ | תיאור |
+|---|---|---|
+| Function | [Function1.sql](./שלב%20ד/Function1.sql) | `func_trip_revenue_report()` — דוח הכנסות לכל סיור (REFCURSOR) |
+| Function | [Function2.sql](./שלב%20ד/Function2.sql) | `func_get_participant_history(id)` — היסטוריית רישומים של משתתף (REFCURSOR) |
+| Procedure | [Procedure1.sql](./שלב%20ד/Procedure1.sql) | `proc_register_participant(...)` — רישום משתתף לסיור עם ולידציות |
+| Procedure | [Procedure2.sql](./שלב%20ד/Procedure2.sql) | `proc_process_expired_bookings()` — ביטול רישומים שפג תוקפם |
+| Trigger | [Trigger1.sql](./שלב%20ד/Trigger1.sql) | `BEFORE INSERT` על REGISTRATION — מילוי אוטומטי וחסימת סיור מלא |
+| Trigger | [Trigger2.sql](./שלב%20ד/Trigger2.sql) | `AFTER UPDATE` על REGISTRATION — ביקורת ושחרור קיבולת בביטול |
+| Main | [MainProgram1.sql](./שלב%20ד/MainProgram1.sql) · [MainProgram2.sql](./שלב%20ד/MainProgram2.sql) | תוכניות ראשיות המזמנות פונקציה + פרוצדורה |
+| Schema | [AlterTable.sql](./שלב%20ד/AlterTable.sql) | הוספת `CurrentBookings` ל‑GUIDEDTOUR וטבלת `REGISTRATION_AUDIT` |
+| Backup | [backup4.dump](./שלב%20ד/backup4.dump) | גיבוי מעודכן הכולל את תוכניות שלב ד' |
+
+> **הערה על סנכרון:** כל אובייקטי שלב ג'+ד' (העמודה `CurrentBookings`, טבלת הביקורת, המבטים, הפונקציות, הפרוצדורות והטריגרים) נטענים אוטומטית בעת `docker compose up` דרך הסקריפטים `init-db/07_alter_tables.sql` … `init-db/11_triggers.sql`, כך שבסיס הנתונים החי תואם במלואו לאפליקציה הגרפית של שלב ה'.
+
+---
+
+# Stage 5: Graphical User Interface
+
+> הוראות הפעלה מפורטות: **[שלב ה/setup_and_run.md](./שלב%20ה/setup_and_run.md)**
+
+## כלים וטכנולוגיות
+
+- **Python 3.10+** עם **Tkinter** לבניית הממשק הגרפי (Desktop).
+- **psycopg2** להתממשקות ישירה מול PostgreSQL.
+- בסיס הנתונים המשולב רץ ב‑**Docker** (כפי שהוגדר בשלבים הקודמים).
+
+## ארכיטקטורה
+
+הקוד מאורגן ב‑[שלב ה/app](./שלב%20ה/app) בהפרדה לשכבות:
+
+- [db.py](./שלב%20ה/app/db.py) — שכבת גישה לנתונים (חיבור, `fetch`/`execute`, זימון `REFCURSOR` ופרוצדורות).
+- [base_crud.py](./שלב%20ה/app/base_crud.py) — מחלקת בסיס גנרית למסכי CRUD (כולל המרת מפתחות זרים לשמות קריאים).
+- מסכים ייעודיים: [trips.py](./שלב%20ה/app/trips.py), [bookings.py](./שלב%20ה/app/bookings.py), [participants.py](./שלב%20ה/app/participants.py), [guides.py](./שלב%20ה/app/guides.py), [routes.py](./שלב%20ה/app/routes.py), [payments.py](./שלב%20ה/app/payments.py).
+- [dashboard.py](./שלב%20ה/app/dashboard.py) — מסך פתיחה עם נתוני סיכום וניווט מהיר.
+- [queries.py](./שלב%20ה/app/queries.py) — הרצת 5 שאילתות משלב ב' + 4 תתי‑תוכניות (פונקציות/פרוצדורות) משלב ד'.
+
+## עמידה בדרישות השלב
+
+- ✅ **4 פעולות CRUD** (שליפה, הוספה, עדכון, מחיקה) לכל הטבלאות דרך מסכים ייעודיים.
+- ✅ **הסתרת מזהים (ID):** מפתחות זרים מוצגים כשמות קריאים (למשל שם מסלול במקום `RouteID`) באמצעות JOIN וצירוף.
+- ✅ **עדכון לפי מפתח:** במסך העדכון מזינים מפתח, המערכת שולפת את יתר השדות (`Fetch Record`) ואז מעדכנים.
+- ✅ **הרצת שאילתות שלב ב'** (5 שאילתות) ו‑**תתי‑תוכניות שלב ד'** (2 פונקציות + 2 פרוצדורות) ממסך ייעודי.
+- ✅ **מסך כניסה/ניווט** (Dashboard) שממנו ניתן להגיע לכל מסכי המערכת.
+
+## הפעלה מהירה
+
+```bash
+docker compose up -d
+pip install -r "שלב ה/requirements.txt"
+cd "שלב ה/app"
+python main.py
+```
+
+> צילומי מסך של הפעלת האפליקציה ומסכיה יש לצרף בתיקיית `שלב ה` (קבצי תמונה של כל מסך והפעלותיו), כנדרש בהנחיות השלב.
+
 </div>
