@@ -68,13 +68,13 @@ If the connection fails, an error dialog will appear with troubleshooting hints.
 
 | Screen | Description |
 |---|---|
-| **Dashboard** | Overview stats + recent bookings + quick-nav buttons |
-| **Trips** | CRUD for `TRIP` table (links to Route, Guide, Status) |
-| **Bookings** | CRUD for `BOOKING` table (links to Participant, Trip, Status) |
+| **Dashboard** | Overview stats + recent registrations + quick-nav buttons |
+| **Trips** | CRUD for `GUIDEDTOUR` table (links to Route, Guide, Status) |
+| **Bookings** | CRUD for `REGISTRATION` table (links to Participant, Trip, Status) |
 | **Participants** | CRUD for `PARTICIPANT` table |
 | **Guides** | CRUD for `GUIDE` table |
 | **Routes** | CRUD for `ROUTE` table (links to DifficultyLevel) |
-| **Payments** | CRUD for `PAYMENT` table (links to Booking, Status) |
+| **Payments** | CRUD for `PAYMENT` table (links to Registration, Status) |
 | **Queries & Programs** | 5 Stage-2 SQL queries + 4 Stage-4 PL/pgSQL programs |
 
 ---
@@ -110,7 +110,7 @@ If the connection fails, an error dialog will appear with troubleshooting hints.
 | Q1 | Participants in Historic/Nature tours |
 | Q2 | Routes with ≥ N trips in 2026 (parameterised) |
 | Q3 | Guides not assigned in May 2026 |
-| Q4 | Most popular booking month in 2026 |
+| Q4 | Most popular registration month in 2026 |
 | Q5 | Trips with above-average capacity |
 
 ### Stage-4 PL/pgSQL Programs included
@@ -128,4 +128,6 @@ If the connection fails, an error dialog will appear with troubleshooting hints.
 - **Python 3.10+** — application language
 - **Tkinter / ttk** — GUI framework (built-in, no install needed)
 - **psycopg2-binary** — PostgreSQL adapter
-- **PostgreSQL 15** (via Docker) — database engine
+- **PostgreSQL** (via Docker) — database engine
+
+> Note: Stage 3 views and Stage 4 functions/procedures/triggers (plus the `CurrentBookings` column and `REGISTRATION_AUDIT` table) are loaded automatically on `docker compose up` via `init-db/07_alter_tables.sql` … `init-db/11_triggers.sql`, so the live database matches what the GUI expects.
