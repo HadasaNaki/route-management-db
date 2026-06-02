@@ -13,45 +13,45 @@ RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    v_trip TRIP%ROWTYPE;
+    v_trip GUIDEDTOUR%ROWTYPE;
 BEGIN
-    -- Fetch the trip record
+    -- Fetch the tour record
     SELECT * INTO v_trip
-    FROM TRIP
-    WHERE TripID = NEW.TripID;
+    FROM GUIDEDTOUR
+    WHERE TripID = NEW.TourID;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Trigger: Trip ID % does not exist.', NEW.TripID;
+        RAISE EXCEPTION 'Trigger: Tour ID % does not exist.', NEW.TourID;
     END IF;
 
-    -- Block insert if trip is full
-    IF v_trip.CurrentBookings >= v_trip.MaxCapacity THEN
-        RAISE EXCEPTION 'Trigger: Trip % is fully booked (% / %). Booking rejected.',
-            NEW.TripID, v_trip.CurrentBookings, v_trip.MaxCapacity;
+    -- Block insert if tour is full
+    IF v_trip.CurrentBookings >= v_trip.MaxParticipants THEN
+        RAISE EXCEPTION 'Trigger: Tour % is fully booked (% / %). Registration rejected.',
+            NEW.TourID, v_trip.CurrentBookings, v_trip.MaxParticipants;
     END IF;
 
-    -- Auto-fill AmountToPay from trip price if not explicitly set
+    -- Auto-fill AmountToPay from tour price if not explicitly set
     IF NEW.AmountToPay IS NULL THEN
         NEW.AmountToPay := v_trip.Price;
-        RAISE NOTICE 'Trigger: AmountToPay auto-set to % for BookingID %.',
-            v_trip.Price, NEW.BookingID;
+        RAISE NOTICE 'Trigger: AmountToPay auto-set to % for RegistrationID %.',
+            v_trip.Price, NEW.RegistrationID;
     END IF;
 
-    -- Auto-fill BookingDate if missing
-    IF NEW.BookingDate IS NULL THEN
-        NEW.BookingDate := CURRENT_DATE;
+    -- Auto-fill RegistrationDate if missing
+    IF NEW.RegistrationDate IS NULL THEN
+        NEW.RegistrationDate := CURRENT_DATE;
     END IF;
 
     RETURN NEW;  -- Proceed with the modified NEW row
 
 EXCEPTION
     WHEN OTHERS THEN
-        RAISE EXCEPTION 'trg_fn_before_booking_insert: %', SQLERRM;
+        RAISE EXCEPTION 'trg_fn_before_registration_insert: %', SQLERRM;
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_before_booking_insert ON BOOKING;
-CREATE TRIGGER trg_before_booking_insert
-    BEFORE INSERT ON BOOKING
+DROP TRIGGER IF EXISTS trg_before_registration_insert ON REGISTRATION;
+CREATE TRIGGER trg_before_registration_insert
+    BEFORE INSERT ON REGISTRATION
     FOR EACH ROW
     EXECUTE FUNCTION trg_fn_before_booking_insert();

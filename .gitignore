@@ -205,3 +205,21 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# One-off maintenance/cleanup scripts (not part of the project)
+clean_lines.py
+clean_lines_utf8.py
+clean_ticks.py
+clean_ticks_utf8.py
+fix_backticks.py
+fix_backticks_utf8.py
+fix_finally.py
+fix_finally_utf8.py
+fix_ticks.py
+refactor_readme.py
+scripts_fix.py
+scripts_fix_2.py
+scripts_fix_3.py
+scripts_fix_3_utf8.py
+scripts_fix_4.ps1
+scripts_fix_4_utf8.py

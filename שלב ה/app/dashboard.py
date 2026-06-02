@@ -50,8 +50,8 @@ class DashboardScreen(tk.Frame):
         btn_row.pack(fill=tk.X, padx=10, pady=(0, 12))
 
         nav_items = [
-            ("✈️  Trips",         "trips"),
-            ("📋  Bookings",      "bookings"),
+            ("✈️  Trips",          "trips"),
+            ("📋  Registrations",  "bookings"),
             ("👥  Participants",  "participants"),
             ("👤  Guides",        "guides"),
             ("🗺️  Routes",        "routes"),
@@ -68,8 +68,8 @@ class DashboardScreen(tk.Frame):
                             command=lambda k=key: self.app._show_screen(k))
             btn.pack(side=tk.LEFT, padx=6)
 
-        # ── Recent Bookings ───────────────────────────────────
-        recent_frame = tk.LabelFrame(self, text="  Recent Bookings",
+        # ── Recent Registrations ───────────────────────────────
+        recent_frame = tk.LabelFrame(self, text="  Recent Registrations",
                                      bg=s.BG_CARD, fg=s.A_BLUE,
                                      font=s.F_SECTION,
                                      relief="flat", bd=1,
@@ -78,35 +78,35 @@ class DashboardScreen(tk.Frame):
         recent_frame.pack(fill=tk.BOTH, expand=True, padx=30, pady=10)
 
         cols = [
-            ("bookingid",    "Booking #",  80),
-            ("participantname","Participant",160),
-            ("routename",    "Route",      180),
-            ("departuredate","Departure",  110),
-            ("amounttopay",  "Amount",     90),
-            ("statusname",   "Status",     120),
+            ("registrationid",  "Reg. #",       80),
+            ("participantname", "Participant",  160),
+            ("routename",       "Route",        180),
+            ("startdate",       "Tour Start",   110),
+            ("amounttopay",     "Amount",        90),
+            ("statusname",      "Status",       120),
         ]
         outer, tree = w.scrolled_tree(recent_frame, cols, height=10)
         outer.pack(fill=tk.BOTH, expand=True, padx=8, pady=8)
 
         rows = db.fetch("""
-            SELECT b.BookingID, p.FullName AS participantname,
-                   r.RouteName, t.DepartureDate,
+            SELECT b.RegistrationID, p.FullName AS participantname,
+                   r.Name AS routename, t.StartDate,
                    b.AmountToPay, rs.StatusName
-            FROM BOOKING b
+            FROM REGISTRATION b
             JOIN PARTICIPANT p ON b.ParticipantID = p.ParticipantID
-            JOIN TRIP t        ON b.TripID = t.TripID
+            JOIN GUIDEDTOUR t  ON b.TourID = t.TripID
             JOIN ROUTE r       ON t.RouteID = r.RouteID
             JOIN REGISTRATIONSTATUS rs ON b.RegistrationStatusID = rs.RegistrationStatusID
-            ORDER BY b.BookingDate DESC LIMIT 20
+            ORDER BY b.RegistrationDate DESC LIMIT 20
         """)
         for i, row in enumerate(rows):
             tag = "even" if i % 2 == 0 else "odd"
             tree.insert("", tk.END,
-                        iid=str(row["bookingid"]),
-                        values=(row["bookingid"],
+                        iid=str(row["registrationid"]),
+                        values=(row["registrationid"],
                                 row["participantname"],
                                 row["routename"],
-                                str(row["departuredate"]),
+                                str(row["startdate"]),
                                 f"₪{row['amounttopay']:.2f}" if row["amounttopay"] else "—",
                                 row["statusname"]),
                         tags=(tag,))
@@ -115,12 +115,12 @@ class DashboardScreen(tk.Frame):
         try:
             rows = db.fetch("""
                 SELECT
-                  (SELECT COUNT(*) FROM TRIP)        AS trips,
-                  (SELECT COUNT(*) FROM BOOKING)     AS bookings,
-                  (SELECT COUNT(*) FROM PARTICIPANT) AS participants,
-                  (SELECT COUNT(*) FROM GUIDE)       AS guides,
-                  (SELECT COUNT(*) FROM ROUTE)       AS routes,
-                  (SELECT COUNT(*) FROM PAYMENT)     AS payments
+                  (SELECT COUNT(*) FROM GUIDEDTOUR)   AS trips,
+                  (SELECT COUNT(*) FROM REGISTRATION) AS bookings,
+                  (SELECT COUNT(*) FROM PARTICIPANT)  AS participants,
+                  (SELECT COUNT(*) FROM GUIDE)        AS guides,
+                  (SELECT COUNT(*) FROM ROUTE)        AS routes,
+                  (SELECT COUNT(*) FROM PAYMENT)      AS payments
             """)
             r = rows[0]
             return [

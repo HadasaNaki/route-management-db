@@ -26,32 +26,32 @@ BEGIN
     END IF;
 
     -- Write audit log entry for every status transition
-    INSERT INTO BOOKING_AUDIT (BookingID, OldStatusID, NewStatusID)
-    VALUES (NEW.BookingID, OLD.RegistrationStatusID, NEW.RegistrationStatusID);
+    INSERT INTO REGISTRATION_AUDIT (RegistrationID, OldStatusID, NewStatusID)
+    VALUES (NEW.RegistrationID, OLD.RegistrationStatusID, NEW.RegistrationStatusID);
 
-    RAISE NOTICE 'AUDIT: Booking % changed status % → %',
-        NEW.BookingID, OLD.RegistrationStatusID, NEW.RegistrationStatusID;
+    RAISE NOTICE 'AUDIT: Registration % changed status % → %',
+        NEW.RegistrationID, OLD.RegistrationStatusID, NEW.RegistrationStatusID;
 
-    -- If booking was cancelled → adjust trip capacity
+    -- If registration was cancelled → adjust tour capacity
     IF NEW.RegistrationStatusID = 3 AND OLD.RegistrationStatusID != 3 THEN
 
         -- Decrement counter
-        UPDATE TRIP
+        UPDATE GUIDEDTOUR
         SET CurrentBookings = GREATEST(CurrentBookings - 1, 0)
-        WHERE TripID = NEW.TripID
-        RETURNING CurrentBookings, MaxCapacity, TourStatusID
+        WHERE TripID = NEW.TourID
+        RETURNING CurrentBookings, MaxParticipants, TourStatusID
             INTO v_trip_current_bookings, v_trip_max_capacity, v_trip_status_id;
 
-        RAISE NOTICE 'Trip % capacity released: now % / %',
-            NEW.TripID, v_trip_current_bookings, v_trip_max_capacity;
+        RAISE NOTICE 'Tour % capacity released: now % / %',
+            NEW.TourID, v_trip_current_bookings, v_trip_max_capacity;
 
-        -- If trip was Full, reopen it
+        -- If tour was Full, reopen it
         IF v_trip_status_id = 3 THEN   -- 3 = Full
-            UPDATE TRIP
+            UPDATE GUIDEDTOUR
             SET TourStatusID = 2       -- 2 = Open for Registration
-            WHERE TripID = NEW.TripID;
+            WHERE TripID = NEW.TourID;
 
-            RAISE NOTICE 'Trip % status reverted to Open for Registration.', NEW.TripID;
+            RAISE NOTICE 'Tour % status reverted to Open for Registration.', NEW.TourID;
         END IF;
 
     END IF;
@@ -60,12 +60,12 @@ BEGIN
 
 EXCEPTION
     WHEN OTHERS THEN
-        RAISE EXCEPTION 'trg_fn_after_booking_update: %', SQLERRM;
+        RAISE EXCEPTION 'trg_fn_after_registration_update: %', SQLERRM;
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_after_booking_update ON BOOKING;
-CREATE TRIGGER trg_after_booking_update
-    AFTER UPDATE ON BOOKING
+DROP TRIGGER IF EXISTS trg_after_registration_update ON REGISTRATION;
+CREATE TRIGGER trg_after_registration_update
+    AFTER UPDATE ON REGISTRATION
     FOR EACH ROW
     EXECUTE FUNCTION trg_fn_after_booking_update();

@@ -11,8 +11,8 @@ class RoutesScreen(BaseCRUDScreen):
     ICON   = "🗺️"
 
     LIST_QUERY = """
-        SELECT r.RouteID, r.RouteName,
-               r.Duration,
+        SELECT r.RouteID, r.Name,
+               r.EstimatedDuration,
                d.DifficultyName AS difficulty,
                r.EstimatedLength,
                r.Description
@@ -21,29 +21,29 @@ class RoutesScreen(BaseCRUDScreen):
         ORDER BY r.RouteID
     """
     LIST_COLS = [
-        ("routename",      "Route Name",      200),
-        ("duration",       "Duration (min)",   120),
-        ("difficulty",     "Difficulty",       110),
-        ("estimatedlength","Length (km)",       100),
-        ("description",    "Description",      260),
+        ("name",              "Route Name",      200),
+        ("estimatedduration", "Duration (min)",   120),
+        ("difficulty",        "Difficulty",       110),
+        ("estimatedlength",   "Length (km)",       100),
+        ("description",       "Description",      260),
     ]
     FORM_FIELDS = [
-        FormField("Route Name",       "routename"),
-        FormField("Duration (min)",   "duration"),
-        FormField("Estimated Length (km)", "estimatedlength"),
-        FormField("Description",      "description"),
-        FormField("Difficulty",       "difficultyid", kind="combo",
+        FormField("Route Name",            "name"),
+        FormField("Duration (min)",         "estimatedduration"),
+        FormField("Estimated Length (km)",  "estimatedlength"),
+        FormField("Description",           "description"),
+        FormField("Difficulty",            "difficultyid", kind="combo",
                   fk_query="SELECT DifficultyID, DifficultyName FROM DIFFICULTYLEVEL ORDER BY DifficultyID",
                   fk_id_col="difficultyid", fk_lbl_col="difficultyname"),
     ]
 
     INSERT_SQL = """
         INSERT INTO ROUTE
-            (RouteID, RouteName, Duration, EstimatedLength, Description, DifficultyID)
+            (RouteID, Name, EstimatedDuration, EstimatedLength, Description, DifficultyID)
         VALUES (
             (SELECT COALESCE(MAX(RouteID),0)+1 FROM ROUTE),
-            %(routename)s,
-            NULLIF(%(duration)s,'')::INT,
+            %(name)s,
+            NULLIF(%(estimatedduration)s,'')::INT,
             NULLIF(%(estimatedlength)s,'')::NUMERIC,
             NULLIF(%(description)s,''),
             %(difficultyid)s
@@ -51,17 +51,17 @@ class RoutesScreen(BaseCRUDScreen):
     """
     UPDATE_SQL = """
         UPDATE ROUTE SET
-            RouteName       = %(routename)s,
-            Duration        = NULLIF(%(duration)s,'')::INT,
-            EstimatedLength = NULLIF(%(estimatedlength)s,'')::NUMERIC,
-            Description     = NULLIF(%(description)s,''),
-            DifficultyID    = %(difficultyid)s
+            Name              = %(name)s,
+            EstimatedDuration = NULLIF(%(estimatedduration)s,'')::INT,
+            EstimatedLength   = NULLIF(%(estimatedlength)s,'')::NUMERIC,
+            Description       = NULLIF(%(description)s,''),
+            DifficultyID      = %(difficultyid)s
         WHERE RouteID = %(id)s
     """
     DELETE_SQL = "DELETE FROM ROUTE WHERE RouteID = %s"
     FETCH_SQL  = """
-        SELECT r.RouteID, r.RouteName,
-               r.Duration,
+        SELECT r.RouteID, r.Name,
+               r.EstimatedDuration,
                r.EstimatedLength,
                r.Description,
                r.DifficultyID AS difficultyid
